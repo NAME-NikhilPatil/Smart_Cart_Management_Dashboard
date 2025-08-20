@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardPage from './pages/DashboardPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import CartsPage from './pages/CartsPage';
@@ -8,32 +8,62 @@ import NotificationsPanel from './components/NotificationsPanel';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 
-// Define the possible page names
 type Page = 'Dashboard' | 'Analytics' | 'Carts' | 'Settings' | 'Profile';
 
 function App() {
-  // --- New State Management ---
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Is the user logged in?
-  const [authPage, setAuthPage] = useState<'login' | 'signup'>('login'); // Which auth page to show
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authPage, setAuthPage] = useState<'login' | 'signup'>('login');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // --- Dashboard State (from previous steps) ---
   const [currentPage, setCurrentPage] = useState<Page>('Dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // --- Page Rendering Logic ---
+  // Check localStorage when the app first loads
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('smartCartUserId');
+    if (storedUserId) {
+      setCurrentUserId(storedUserId);
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLoginSuccess = (userId: string) => {
+    localStorage.setItem('smartCartUserId', userId); // Save user ID to storage
+    setCurrentUserId(userId);
+    setIsLoggedIn(true);
+  };
+
+  const handleSignUpSuccess = (userId: string) => {
+    localStorage.setItem('smartCartUserId', userId); // Save user ID to storage
+    setCurrentUserId(userId);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('smartCartUserId'); // Clear user ID from storage
+    setIsLoggedIn(false);
+    setCurrentUserId(null);
+    setCurrentPage('Dashboard');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'Dashboard': return <DashboardPage />;
       case 'Analytics': return <AnalyticsPage />;
       case 'Carts': return <CartsPage searchQuery={searchQuery} />;
       case 'Settings': return <SettingsPage />;
-      case 'Profile': return <ProfilePage onLogout={handleLogout} />; // Pass logout handler
+      case 'Profile': 
+        // This check ensures userId is passed correctly
+        if (currentUserId) {
+            return <ProfilePage userId={currentUserId} onLogout={handleLogout} />;
+        }
+        // Fallback in case there's no user ID, though this shouldn't be reached if logic is correct
+        return <div>Error: No user is currently logged in.</div>;
       default: return <DashboardPage />;
     }
   };
 
-  // --- Event Handlers ---
   const handleNavClick = (page: Page) => {
     setCurrentPage(page);
     setSearchQuery('');
@@ -44,17 +74,9 @@ function App() {
     setCurrentPage('Carts');
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setCurrentPage('Dashboard'); // Reset to default page after logout
-  };
-
-  // --- Main Render Logic ---
-  // If the user is logged in, show the dashboard. Otherwise, show the auth pages.
   if (isLoggedIn) {
     return (
       <div className="bg-gray-100 min-h-screen font-sans">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
@@ -72,12 +94,12 @@ function App() {
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                     <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                   </span>
-                  <input
-                    type="text"
-                    placeholder="Find a cart..."
+                  <input 
+                    type="text" 
+                    placeholder="Find a cart..." 
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
                   />
                 </div>
                 <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 rounded-full text-gray-500 hover:bg-gray-100">
@@ -99,9 +121,9 @@ function App() {
   } else {
     // User is not logged in, show either Login or SignUp page
     return (
-      authPage === 'login'
-        ? <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} onSwitchToSignUp={() => setAuthPage('signup')} />
-        : <SignUpPage onSignUpSuccess={() => setIsLoggedIn(true)} onSwitchToLogin={() => setAuthPage('login')} />
+      authPage === 'login' 
+        ? <LoginPage onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setAuthPage('signup')} /> 
+        : <SignUpPage onSignUpSuccess={handleSignUpSuccess} onSwitchToLogin={() => setAuthPage('login')} />
     );
   }
 }

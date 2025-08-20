@@ -20,16 +20,27 @@ interface Alert {
 
 interface KpiCardProps {
     title: string;
-    value: string;
+    value: string | number;
     icon: React.ReactNode;
     iconBgColor: string;
     iconTextColor: string;
 }
 
+interface KpiData {
+    liveShoppers: number;
+    cartsInUse: number;
+    totalCarts: number;
+    avgBasketSize: number;
+    todaysRevenue: number;
+    totalProductsSold: number;
+    productsInCarts: number;
+    productsInStore: number;
+}
+
 // --- Icon Components ---
 const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
 const CartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
-const DollarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2mc-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z" /></svg>;
+const RupeeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 8h6m-5 4h5m2 5H7.5a4.5 4.5 0 110-9H12" /></svg>;
 const ChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
 const AlertTriangleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8.257 3.099c.636-1.21 2.273-1.21 2.91 0l5.25 10.001c.636 1.21-.242 2.65-1.455 2.65H4.462c-1.213 0-2.091-1.44-1.455-2.65l5.25-10.001zM10 14a1 1 0 110-2 1 1 0 010 2zm0-7a1 1 0 00-1 1v2a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>;
 const OfflineIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0L6.18 9.42a1.5 1.5 0 001.34 2.08h4.96a1.5 1.5 0 001.34-2.08l-2.33-6.25zM10 15a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>;
@@ -44,8 +55,7 @@ const CollectionIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="
 const ViewBoardsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>;
 const ChevronDownIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>;
 
-
-// --- Helper to get status styles (used by modal and fleet status) ---
+// --- Helper to get status styles ---
 const getStatusStyles = (status: Cart['status']) => {
     switch (status) {
         case 'In Use': return { bg: 'bg-blue-100', text: 'text-blue-800', icon: <InUseIcon /> };
@@ -85,7 +95,7 @@ const CartDetailsModal = ({ cart, onClose }: { cart: Cart; onClose: () => void; 
                                 {cart.itemsList.map((item, index) => (
                                     <li key={index} className="flex justify-between">
                                         <span>{item.name}</span>
-                                        <span>${item.price.toFixed(2)}</span>
+                                        <span>₹{item.price.toFixed(2)}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -103,42 +113,78 @@ const CartDetailsModal = ({ cart, onClose }: { cart: Cart; onClose: () => void; 
 
 const DashboardPage = () => {
     const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
-    const [alerts, setAlerts] = useState<Alert[]>([
-        { id: 1, type: 'Assistance', title: 'Assistance Requested', subtitle: 'Cart-033 in Aisle 7' },
-        { id: 2, type: 'Offline', title: 'Cart-019 Offline', subtitle: 'Last seen near checkout' },
-    ]);
+    const [kpiData, setKpiData] = useState<KpiData | null>(null);
+    const [alerts, setAlerts] = useState<Alert[]>([]);
+    const [fleet, setFleet] = useState<Cart[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const fleet: Cart[] = [
-        { id: '042', status: 'In Use', battery: 85, items: 12, shopperName: 'Jane Doe', itemsList: [{name: 'Milk', price: 4.99}] },
-        { id: '112', status: 'Available', battery: 100, items: 0 },
-        { id: '007', status: 'Low Battery', battery: 18, items: 5, shopperName: 'John Smith', itemsList: [{name: 'Eggs', price: 5.49}] },
-        { id: '023', status: 'Charging', battery: 65, items: 0 },
-        { id: '033', status: 'Assistance', battery: 55, items: 8, shopperName: 'Emily White', itemsList: [{name: 'Cereal', price: 6.20}] },
-    ];
+
+    const kpiUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/dashboard-kpis?';
+    const alertsUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/alerts?';
+    const fleetUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/carts?';
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const [kpiResponse, alertsResponse, fleetResponse] = await Promise.all([
+                    fetch(kpiUrl),
+                    fetch(alertsUrl),
+                    fetch(fleetUrl)
+                ]);
+
+                if (!kpiResponse.ok || !alertsResponse.ok || !fleetResponse.ok) {
+                    throw new Error('Failed to fetch dashboard data');
+                }
+
+                const kpiJson = await kpiResponse.json();
+                const alertsJson = await alertsResponse.json();
+                const fleetJson = await fleetResponse.json();
+
+                setKpiData(kpiJson);
+                setAlerts(alertsJson);
+                setFleet(fleetJson);
+
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
 
     const dismissAlert = (alertId: number) => {
         setAlerts(currentAlerts => currentAlerts.filter(alert => alert.id !== alertId));
     };
 
+    if (isLoading) {
+        return <div className="p-8 text-center text-gray-500">Loading Dashboard...</div>;
+    }
+
+    if (error) {
+        return <div className="p-8 text-center text-red-500">Error: {error}</div>;
+    }
+
     return (
         <div className="py-8">
             {selectedCart && <CartDetailsModal cart={selectedCart} onClose={() => setSelectedCart(null)} />}
             
-            {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                 <KpiCard title="Live Shoppers" value="78" icon={<UserIcon />} iconBgColor="bg-blue-100" iconTextColor="text-blue-600" />
-                 <KpiCard title="Carts in Use" value="78 / 150" icon={<CartIcon />} iconBgColor="bg-green-100" iconTextColor="text-green-600" />
-                 <KpiCard title="Avg. Basket Size" value="$45.32" icon={<DollarIcon />} iconBgColor="bg-yellow-100" iconTextColor="text-yellow-600" />
-                 <KpiCard title="Today's Revenue" value="$12,480" icon={<ChartIcon />} iconBgColor="bg-purple-100" iconTextColor="text-purple-600" />
-                 <KpiCard title="Total Products Sold" value="1,204" icon={<TagIcon />} iconBgColor="bg-pink-100" iconTextColor="text-pink-600" />
-                 <KpiCard title="Products in Carts" value="932" icon={<CubeIcon />} iconBgColor="bg-indigo-100" iconTextColor="text-indigo-600" />
-                 <KpiCard title="Products in Store" value="8,750" icon={<CollectionIcon />} iconBgColor="bg-teal-100" iconTextColor="text-teal-600" />
+                 <KpiCard title="Live Shoppers" value={kpiData?.liveShoppers ?? 0} icon={<UserIcon />} iconBgColor="bg-blue-100" iconTextColor="text-blue-600" />
+                 <KpiCard title="Carts in Use" value={`${kpiData?.cartsInUse ?? 0} / ${kpiData?.totalCarts ?? 0}`} icon={<CartIcon />} iconBgColor="bg-green-100" iconTextColor="text-green-600" />
+                 <KpiCard title="Avg. Basket Size" value={`₹${kpiData?.avgBasketSize.toFixed(2) ?? 0}`} icon={<RupeeIcon />} iconBgColor="bg-yellow-100" iconTextColor="text-yellow-600" />
+                 <KpiCard title="Today's Revenue" value={`₹${kpiData?.todaysRevenue.toLocaleString('en-IN') ?? 0}`} icon={<ChartIcon />} iconBgColor="bg-purple-100" iconTextColor="text-purple-600" />
+                 <KpiCard title="Total Products Sold" value={kpiData?.totalProductsSold.toLocaleString('en-IN') ?? 0} icon={<TagIcon />} iconBgColor="bg-pink-100" iconTextColor="text-pink-600" />
+                 <KpiCard title="Products in Carts" value={kpiData?.productsInCarts.toLocaleString('en-IN') ?? 0} icon={<CubeIcon />} iconBgColor="bg-indigo-100" iconTextColor="text-indigo-600" />
+                 <KpiCard title="Products in Store" value={kpiData?.productsInStore.toLocaleString('en-IN') ?? 0} icon={<CollectionIcon />} iconBgColor="bg-teal-100" iconTextColor="text-teal-600" />
                  <AisleProductCard />
             </div>
 
-            {/* Dashboard Grid */}
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Live Store Map */}
                 <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Store Map</h3>
                     <div className="h-96 bg-gray-50 rounded-md relative flex items-center justify-center border">
@@ -146,9 +192,7 @@ const DashboardPage = () => {
                     </div>
                 </div>
 
-                {/* Right Sidebar */}
                 <div className="space-y-8">
-                    {/* Critical Alerts */}
                     <div className="bg-white rounded-lg shadow p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Critical Alerts</h3>
                         <div className="space-y-4">
@@ -168,13 +212,16 @@ const DashboardPage = () => {
                         </div>
                     </div>
 
-                    {/* Cart Fleet Status */}
                     <div className="bg-white rounded-lg shadow p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Cart Fleet Status</h3>
                         <ul className="space-y-2">
-                            {fleet.map(cart => (
-                                <CartStatusItem key={cart.id} cart={cart} onDetailsClick={() => setSelectedCart(cart)} />
-                            ))}
+                            {fleet.length > 0 ? (
+                                fleet.map(cart => (
+                                    <CartStatusItem key={cart.id} cart={cart} onDetailsClick={() => setSelectedCart(cart)} />
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-500 text-center py-4">No cart data available.</p>
+                            )}
                         </ul>
                     </div>
                 </div>
@@ -216,7 +263,6 @@ const AisleProductCard = () => {
         aisle.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

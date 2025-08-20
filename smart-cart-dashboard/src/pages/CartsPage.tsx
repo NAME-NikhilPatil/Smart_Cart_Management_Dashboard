@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // --- TypeScript Type Definition for a Cart ---
 interface Cart {
-  id: string;
+  _id: string; // MongoDB uses _id
+  cartId: string;
   status: 'In Use' | 'Available' | 'Charging' | 'Low Battery' | 'Assistance';
   battery: number;
-  items: number;
+  items: { name: string, price: number, quantity: number }[];
   shopperName?: string;
-  since?: string;
-  itemsList?: { name: string, price: number }[];
+  lastUpdated?: string;
 }
 
-// --- Icon Components for different statuses ---
+// --- Icon Components ---
 const InUseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
 const AvailableIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 const ChargingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
@@ -31,15 +31,17 @@ const getStatusStyles = (status: Cart['status']) => {
 };
 
 // --- Cart Details Modal Component ---
-const CartDetailsModal = ({ cart, onClose }: { cart: Cart; onClose: () => void; }) => {
+const CartDetailsModal = ({ cart, onClose }: { cart: Cart | null; onClose: () => void; }) => {
     if (!cart) return null;
+    
     const statusStyles = getStatusStyles(cart.status);
+    const totalItems = Array.isArray(cart.items) ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg m-4">
                 <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-gray-800">Cart-{cart.id} Details</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Cart-{cart.cartId} Details</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-3xl">&times;</button>
                 </div>
                 <div className="p-6 space-y-4">
@@ -47,18 +49,17 @@ const CartDetailsModal = ({ cart, onClose }: { cart: Cart; onClose: () => void; 
                         {statusStyles.icon} {cart.status}
                     </div>
                     {cart.shopperName && <p><strong>Shopper:</strong> {cart.shopperName}</p>}
-                    {cart.since && <p><strong>Since:</strong> {cart.since}</p>}
                     <p><strong>Battery:</strong> {cart.battery}%</p>
-                    <p><strong>Items in Cart:</strong> {cart.items}</p>
+                    <p><strong>Items in Cart:</strong> {totalItems}</p>
                     
-                    {cart.itemsList && cart.itemsList.length > 0 && (
+                    {cart.items && cart.items.length > 0 && (
                         <div>
                             <h4 className="font-semibold mt-4 mb-2">Items List:</h4>
                             <ul className="list-disc list-inside bg-gray-50 p-3 rounded-md max-h-40 overflow-y-auto">
-                                {cart.itemsList.map((item, index) => (
+                                {cart.items.map((item, index) => (
                                     <li key={index} className="flex justify-between">
-                                        <span>{item.name}</span>
-                                        <span>${item.price.toFixed(2)}</span>
+                                        <span>{item.name} (x{item.quantity})</span>
+                                        <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -76,25 +77,47 @@ const CartDetailsModal = ({ cart, onClose }: { cart: Cart; onClose: () => void; 
 // --- Main CartsPage Component ---
 const CartsPage = ({ searchQuery }: { searchQuery: string }) => {
   const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
+  const [allCarts, setAllCarts] = useState<Cart[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const allCarts: Cart[] = [
-    { id: '042', status: 'In Use', battery: 85, items: 12, shopperName: 'Jane Doe', since: '15 mins ago', itemsList: [{name: 'Milk', price: 4.99}, {name: 'Bread', price: 3.79}] },
-    { id: '112', status: 'Available', battery: 100, items: 0, since: '2 hours ago' },
-    { id: '007', status: 'Low Battery', battery: 18, items: 5, shopperName: 'John Smith', since: '5 mins ago', itemsList: [{name: 'Eggs', price: 5.49}] },
-    { id: '023', status: 'Charging', battery: 65, items: 0, since: '45 mins ago' },
-    { id: '033', status: 'Assistance', battery: 55, items: 8, shopperName: 'Emily White', since: '2 mins ago', itemsList: [{name: 'Cereal', price: 6.20}] },
-    { id: '051', status: 'Available', battery: 95, items: 0, since: '30 mins ago' },
-  ];
+  const cartsUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/carts?';
 
-  // **FIXED FILTERING LOGIC**
-  const filteredCarts = allCarts.filter(cart => {
-    const fullCartId = `cart-${cart.id}`;
-    return fullCartId.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  useEffect(() => {
+    const fetchCarts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(cartsUrl);
+        if (!response.ok) {
+          throw new Error('Failed to fetch cart data.');
+        }
+        const data = await response.json();
+        setAllCarts(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCarts();
+  }, []);
+
+  const filteredCarts = allCarts.filter(cart =>
+    `cart-${cart.cartId}`.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-gray-500">Loading Cart Fleet...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {selectedCart && <CartDetailsModal cart={selectedCart} onClose={() => setSelectedCart(null)} />}
+      <CartDetailsModal cart={selectedCart} onClose={() => setSelectedCart(null)} />
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8">Cart Fleet Management</h1>
       
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -113,10 +136,12 @@ const CartsPage = ({ searchQuery }: { searchQuery: string }) => {
               filteredCarts.map(cart => {
                 const statusStyles = getStatusStyles(cart.status);
                 const batteryColor = cart.battery > 50 ? 'bg-green-500' : cart.battery > 20 ? 'bg-yellow-500' : 'bg-red-500';
+                // This logic now correctly calculates the total items from the array
+                const totalItems = Array.isArray(cart.items) ? cart.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
                 return (
-                  <tr key={cart.id} className="hover:bg-slate-50 transition-colors duration-200">
+                  <tr key={cart._id} className="hover:bg-slate-50 transition-colors duration-200">
                     <td className="py-4 px-5 whitespace-nowrap">
-                      <div className="text-base font-bold text-gray-900">Cart-{cart.id}</div>
+                      <div className="text-base font-bold text-gray-900">Cart-{cart.cartId}</div>
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap">
                       <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${statusStyles.bg} ${statusStyles.text}`}>
@@ -133,7 +158,7 @@ const CartsPage = ({ searchQuery }: { searchQuery: string }) => {
                       </div>
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap text-center">
-                      <span className="text-base font-bold text-gray-900">{cart.items}</span>
+                      <span className="text-base font-bold text-gray-900">{totalItems}</span>
                     </td>
                     <td className="py-4 px-5 whitespace-nowrap text-center">
                       <button 
