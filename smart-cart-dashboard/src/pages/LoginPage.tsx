@@ -1,99 +1,156 @@
 import React, { useState } from 'react';
+import logo from '../assets/logo.png'; // Make sure this path is correct for your logo
 
+// --- PROPS INTERFACE ---
 interface LoginPageProps {
-  onLoginSuccess: (userId: string) => void;
-  onSwitchToSignUp: () => void;
+    onLoginSuccess: (userId: string) => void;
+    onSwitchToSignUp: () => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onSwitchToSignUp }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    const BASE_URL = 'https://smart-cart-management-backend-hqhedudtd4cnfng8.centralindia-01.azurewebsites.net/api';
 
-    const apiUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/login';
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
 
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      const data = await response.json();
+        try {
+            const res = await fetch(`${BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-      if (!response.ok) {
-        // Use the error message from the backend if available
-        throw new Error(data || 'Login failed. Please check your credentials.');
-      }
+            const data = await res.json();
 
-      // On success, pass the userId up to the App component
-      onLoginSuccess(data.userId);
+            if (!res.ok) {
+                throw new Error(data.body || data.message || 'Login failed. Please check your credentials.');
+            }
 
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+            onLoginSuccess(data.userId);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex flex-col justify-center items-center p-4">
-      <div className="max-w-md w-full mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-extrabold text-gray-900">Welcome Back!</h1>
-          <p className="mt-3 text-gray-600">Log in to manage your Smart Cart system.</p>
-        </div>
-        <div className="bg-white p-8 rounded-2xl shadow-xl">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700">Email Address</label>
-              <input 
-                type="email" 
-                required 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                placeholder="you@example.com"
-              />
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex bg-white font-sans overflow-hidden">
+            {/* --- Left Side: Clean Branding Area with Seamless Blend --- */}
+            <div className="hidden lg:flex w-1/2 relative overflow-hidden items-center justify-center p-12 bg-white"> 
+                
+                {/* Subtle Ambient Glow */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-96 h-96 bg-lime-400 rounded-full blur-3xl opacity-5 animate-pulse-light-subtle"></div>
+                </div>
+
+                <div className="relative z-10 text-center flex flex-col items-center">
+                    {/* MaGCoff Logo - THE FIX APPLIED HERE */}
+                    <img 
+                        src={logo} 
+                        alt="MaGCoff Logo" 
+                        // MAGIC FIX: mix-blend-multiply makes the background transparent. 
+                        // contrast & brightness force the off-white background to become pure white so it disappears.
+                        className="w-[450px] h-auto object-contain mb-10 animate-fade-in-down mix-blend-multiply filter contrast-125 brightness-110"
+                    />
+                    
+                    {/* Taglines */}
+                    <h2 className="text-5xl font-extrabold text-gray-900 mb-4 animate-fade-in-up">
+                        Unlock Smart Retail
+                    </h2>
+                    <p className="text-xl text-gray-600 font-light max-w-md leading-relaxed animate-fade-in-up animation-delay-500">
+                        Experience the future of seamless shopping and intelligent management.
+                    </p>
+                </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700">Password</label>
-              <input 
-                type="password" 
-                required 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                placeholder="••••••••"
-              />
+
+            {/* --- Right Side: Login Form Area --- */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-gray-50 relative z-20 shadow-inner">
+                <div className="w-full max-w-md space-y-10 animate-fade-in-right">
+                    
+                    {/* Header Text */}
+                    <div className="text-center lg:text-left">
+                        <h2 className="text-4xl font-bold text-gray-900 tracking-tight">
+                            Welcome Back
+                        </h2>
+                        <p className="mt-3 text-gray-600 text-lg">
+                            Please enter your details to sign in.
+                        </p>
+                    </div>
+
+                    {/* The Form */}
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        
+                        {/* Email Field */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-700 uppercase tracking-wide ml-1">
+                                Email Address
+                            </label>
+                            <input 
+                                type="email" 
+                                required
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                className="w-full px-5 py-4 rounded-2xl bg-white border-2 border-transparent focus:bg-white focus:border-lime-500 focus:ring-4 focus:ring-lime-500/10 transition-all outline-none font-medium text-gray-900 placeholder-gray-400 shadow-sm" 
+                                placeholder="manager@magcoff.com" 
+                            />
+                        </div>
+
+                        {/* Password Field */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-700 uppercase tracking-wide ml-1">
+                                Password
+                            </label>
+                            <input 
+                                type="password" 
+                                required
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                className="w-full px-5 py-4 rounded-2xl bg-white border-2 border-transparent focus:bg-white focus:border-lime-500 focus:ring-4 focus:ring-lime-500/10 transition-all outline-none font-medium text-gray-900 placeholder-gray-400 shadow-sm" 
+                                placeholder="••••••••" 
+                            />
+                        </div>
+
+                        {/* Error Message Display */}
+                        {error && (
+                            <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-2xl text-center font-medium animate-shake">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* Submit Button */}
+                        <button 
+                            type="submit"
+                            disabled={loading} 
+                            className="w-full py-4 bg-lime-500 hover:bg-lime-600 text-white font-bold rounded-2xl shadow-lg shadow-lime-500/40 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-lg mt-4"
+                        >
+                            {loading ? 'Signing In...' : 'Sign In'}
+                        </button>
+                    </form>
+
+                    {/* Switch to Sign Up */}
+                    <div className="text-center text-gray-500 font-medium">
+                        Don't have an account?{' '}
+                        <button 
+                            onClick={onSwitchToSignUp} 
+                            className="font-bold text-lime-600 hover:text-lime-700 hover:underline ml-1 focus:outline-none"
+                        >
+                            Sign Up Now
+                        </button>
+                    </div>
+
+                </div>
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-            <button 
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
-            >
-              {isLoading ? 'Logging In...' : 'Log In'}
-            </button>
-          </form>
-          <p className="mt-8 text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <button onClick={onSwitchToSignUp} className="font-semibold text-blue-600 hover:text-blue-500 underline">
-              Sign up
-            </button>
-          </p>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default LoginPage;

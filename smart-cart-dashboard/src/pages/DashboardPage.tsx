@@ -1,348 +1,630 @@
-import React, { useState, useEffect, useRef } from 'react';
+// import React, { useState } from 'react';
 
-// --- TypeScript Type Definitions ---
-interface Cart {
-  id: string;
-  status: 'In Use' | 'Available' | 'Charging' | 'Low Battery' | 'Assistance';
-  battery: number;
-  items: number;
-  shopperName?: string;
-  since?: string;
-  itemsList?: { name: string, price: number }[];
+// // --- Interfaces ---
+// interface KpiData {
+//   liveShoppers: number;
+//   cartsInUse: number;
+//   totalCarts: number;
+//   avgBasketSize: number;
+//   todaysRevenue: number;
+//   totalProductsSold: number;
+//   productsInCarts: number;
+//   productsInStore: number;
+// }
+
+// interface Activity {
+//   time: string;
+//   text: string;
+//   type: 'add' | 'success' | 'remove' | 'alert' | 'info';
+// }
+
+// // --- KPI Card Component ---
+// interface KpiCardProps {
+//     id: string;
+//     title: string;
+//     value: string | number;
+//     subtext: string;
+//     icon: React.ReactNode;
+//     trend?: number;
+//     color: 'blue' | 'green' | 'purple' | 'orange' | 'lime' | 'indigo' | 'rose' | 'cyan';
+//     chartData: number[];
+//     onClick: (id: string) => void;
+// }
+
+// const KpiCard: React.FC<KpiCardProps> = ({ id, title, value, subtext, icon, trend, color, chartData, onClick }) => {
+    
+//     const styleMap = {
+//         lime:   { iconBg: "bg-lime-100", iconText: "text-lime-700", bar: "bg-lime-500", badge: "bg-lime-100 text-lime-700" },
+//         blue:   { iconBg: "bg-blue-100", iconText: "text-blue-700", bar: "bg-blue-500", badge: "bg-blue-100 text-blue-700" },
+//         orange: { iconBg: "bg-orange-100", iconText: "text-orange-700", bar: "bg-orange-500", badge: "bg-orange-100 text-orange-700" },
+//         purple: { iconBg: "bg-purple-100", iconText: "text-purple-700", bar: "bg-purple-500", badge: "bg-purple-100 text-purple-700" },
+//         green:  { iconBg: "bg-emerald-100", iconText: "text-emerald-700", bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700" },
+//         indigo: { iconBg: "bg-indigo-100", iconText: "text-indigo-700", bar: "bg-indigo-500", badge: "bg-indigo-100 text-indigo-700" },
+//         cyan:   { iconBg: "bg-cyan-100", iconText: "text-cyan-700", bar: "bg-cyan-500", badge: "bg-cyan-100 text-cyan-700" },
+//         rose:   { iconBg: "bg-rose-100", iconText: "text-rose-700", bar: "bg-rose-500", badge: "bg-rose-100 text-rose-700" },
+//     };
+
+//     const theme = styleMap[color];
+
+//     return (
+//         <div 
+//             onClick={() => onClick(id)}
+//             className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group cursor-pointer"
+//         >
+//             <div className="flex justify-between items-start mb-4">
+//                 <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.iconText}`}>
+//                     {icon}
+//                 </div>
+//                 {trend !== undefined && (
+//                     <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center ${trend > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+//                         {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
+//                     </span>
+//                 )}
+//             </div>
+            
+//             <div className="relative z-10">
+//                 <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{title}</p>
+//                 <h3 className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">{value}</h3>
+//                 <p className="text-slate-400 text-xs mt-1 font-medium">{subtext}</p>
+//             </div>
+
+//             <div className="flex items-end space-x-1 h-10 mt-4">
+//                 {chartData.map((h, i) => (
+//                     <div 
+//                         key={i} 
+//                         style={{ height: `${h}%` }} 
+//                         className={`flex-1 rounded-t-sm ${theme.bar} opacity-60 group-hover:opacity-100 transition-all duration-300`}
+//                     ></div>
+//                 ))}
+//             </div>
+//         </div>
+//     );
+// };
+
+// // --- Main Dashboard Page ---
+// interface DashboardPageProps {
+//     onNavigate: (page: string, metricId?: string) => void;
+// }
+
+// const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
+    
+//     const [kpi] = useState<KpiData>({
+//         liveShoppers: 84, cartsInUse: 35, totalCarts: 50, avgBasketSize: 851,
+//         todaysRevenue: 45230, totalProductsSold: 1240, productsInCarts: 312, productsInStore: 15400
+//     });
+
+//     const [activities] = useState<Activity[]>([
+//         { time: '10:42 AM', text: 'Cart-04: Added "Organic Milk" (₹78)', type: 'add' },
+//         { time: '10:41 AM', text: 'Cart-12: Checkout Initiated', type: 'success' },
+//         { time: '10:38 AM', text: 'Cart-08: Removed "Bread"', type: 'remove' },
+//         { time: '10:35 AM', text: 'Cart-01: Low Battery Warning (14%)', type: 'alert' },
+//         { time: '10:30 AM', text: 'System: New price sync completed', type: 'info' },
+//     ]);
+
+//     const Icons = {
+//         Revenue: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2mc-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z" /></svg>,
+//         Carts: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+//         Basket: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+//         Shoppers: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
+//         Products: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
+//         Inventory: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
+//         InCart: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>,
+//         Alert: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+//     };
+
+//     const handleCardClick = (id: string) => {
+//         onNavigate('MetricDetail', id);
+//     };
+
+//     return (
+//         <div className="space-y-8 animate-fade-in pb-12">
+            
+//             {/* 1. 8-Grid Widgets */}
+//             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+//                 <KpiCard id="revenue" onClick={handleCardClick} title="Live Revenue" value={`₹${kpi.todaysRevenue.toLocaleString()}`} subtext="Net sales today" icon={Icons.Revenue} trend={12.5} color="lime" chartData={[40, 60, 55, 80, 65, 90, 75, 95, 100]} />
+//                 <KpiCard id="carts" onClick={handleCardClick} title="Active Carts" value={`${kpi.cartsInUse} / ${kpi.totalCarts}`} subtext="70% Utilization" icon={Icons.Carts} trend={5.2} color="blue" chartData={[20, 30, 45, 50, 60, 70, 65, 70, 72]} />
+//                 <KpiCard id="basket" onClick={handleCardClick} title="Avg. Basket" value={`₹${kpi.avgBasketSize}`} subtext="Per active session" icon={Icons.Basket} trend={-2.4} color="orange" chartData={[80, 75, 70, 72, 68, 65, 70, 72, 68]} />
+//                 <KpiCard id="products" onClick={handleCardClick} title="Live Products" value={kpi.productsInCarts} subtext="Items currently in carts" icon={Icons.InCart} trend={8.1} color="purple" chartData={[10, 20, 30, 50, 70, 80, 85, 90, 95]} />
+                
+//                 <KpiCard id="sales" onClick={handleCardClick} title="Total Sales" value={kpi.totalProductsSold} subtext="Units sold today" icon={Icons.Products} trend={15.4} color="green" chartData={[30, 45, 60, 75, 80, 85, 90, 95, 100]} />
+//                 <KpiCard id="footfall" onClick={handleCardClick} title="Footfall" value={kpi.liveShoppers} subtext="Shoppers in-store" icon={Icons.Shoppers} trend={3.2} color="indigo" chartData={[20, 40, 50, 55, 60, 58, 62, 65, 60]} />
+//                 <KpiCard id="inventory" onClick={handleCardClick} title="Inventory" value={(kpi.productsInStore/1000).toFixed(1) + 'k'} subtext="SKUs on floor" icon={Icons.Inventory} trend={0} color="cyan" chartData={[100, 98, 96, 94, 92, 90, 88, 86, 84]} />
+//                 <KpiCard id="health" onClick={handleCardClick} title="Cart Health" value="98%" subtext="Fleet operational" icon={Icons.Alert} trend={-1.0} color="rose" chartData={[100, 100, 98, 98, 96, 98, 98, 97, 98]} />
+//             </div>
+
+//             {/* 2. Heatmap & Feed Split */}
+//             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                
+//                 {/* Left: Store Heatmap - REDESIGNED */}
+//                 <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-lg p-8 flex flex-col overflow-hidden">
+//                     <div className="flex justify-between items-center mb-6">
+//                         <div>
+//                             <h3 className="font-extrabold text-slate-800 text-2xl tracking-tight">Live Store Map</h3>
+//                             <p className="text-sm text-slate-500 font-medium mt-1">Real-time cart positioning & zones</p>
+//                         </div>
+//                         <div className="flex space-x-2">
+//                             {['High', 'Med', 'Low'].map((level, i) => (
+//                                 <div key={i} className="flex items-center px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
+//                                     <div className={`w-2.5 h-2.5 rounded-full mr-2 ${level === 'High' ? 'bg-red-500' : level === 'Med' ? 'bg-yellow-400' : 'bg-green-500'}`}></div>
+//                                     <span className="text-xs font-bold text-slate-600">{level}</span>
+//                                 </div>
+//                             ))}
+//                         </div>
+//                     </div>
+                    
+//                     {/* Map Visualization Container */}
+//                     <div className="flex-1 bg-slate-50/50 rounded-2xl relative overflow-hidden border border-slate-200 min-h-[450px] shadow-inner">
+//                         {/* Floor Grid Pattern */}
+//                         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+
+//                         {/* --- ZONE: PRODUCE (Top Left) --- */}
+//                         <div className="absolute top-6 left-6 w-[25%] h-40 bg-green-50/50 border-2 border-green-100 rounded-xl flex items-center justify-center">
+//                              <span className="text-green-300 font-black tracking-widest text-xs uppercase rotate-0">Fresh Produce</span>
+//                         </div>
+
+//                         {/* --- ZONE: BAKERY/DAIRY (Top Right) --- */}
+//                         <div className="absolute top-6 right-6 w-[25%] h-40 bg-orange-50/50 border-2 border-orange-100 rounded-xl flex items-center justify-center">
+//                              <span className="text-orange-300 font-black tracking-widest text-xs uppercase rotate-0">Bakery & Dairy</span>
+//                         </div>
+
+//                         {/* --- ZONE: CENTER AISLES (Middle) --- */}
+//                         {/* Aisle 1 */}
+//                         <div className="absolute top-52 left-[15%] w-[18%] h-40 bg-white border-2 border-slate-200 rounded-lg shadow-sm flex items-center justify-center">
+//                             <span className="text-slate-300 font-black tracking-widest text-xs rotate-90">AISLE 1</span>
+//                         </div>
+//                         {/* Aisle 2 */}
+//                         <div className="absolute top-52 left-[41%] w-[18%] h-40 bg-white border-2 border-slate-200 rounded-lg shadow-sm flex items-center justify-center">
+//                             <span className="text-slate-300 font-black tracking-widest text-xs rotate-90">AISLE 2</span>
+//                         </div>
+//                         {/* Aisle 3 */}
+//                         <div className="absolute top-52 right-[15%] w-[18%] h-40 bg-white border-2 border-slate-200 rounded-lg shadow-sm flex items-center justify-center">
+//                             <span className="text-slate-300 font-black tracking-widest text-xs rotate-90">AISLE 3</span>
+//                         </div>
+
+//                         {/* --- ZONE: CHECKOUT (Bottom) --- */}
+//                         <div className="absolute bottom-0 left-0 right-0 h-20 bg-white border-t-2 border-dashed border-slate-300 flex justify-center items-center">
+//                              <div className="flex space-x-12">
+//                                 <div className="w-16 h-10 bg-slate-100 border border-slate-300 rounded-md flex items-center justify-center text-[10px] text-slate-400 font-bold">REG 1</div>
+//                                 <div className="w-16 h-10 bg-slate-100 border border-slate-300 rounded-md flex items-center justify-center text-[10px] text-slate-400 font-bold">REG 2</div>
+//                                 <div className="w-16 h-10 bg-slate-100 border border-slate-300 rounded-md flex items-center justify-center text-[10px] text-slate-400 font-bold">REG 3</div>
+//                              </div>
+//                              <span className="absolute bottom-2 right-4 text-[10px] text-slate-400 font-black uppercase tracking-widest">Exit</span>
+//                         </div>
+
+//                         {/* --- ACTIVE CARTS (Animated Dots) --- */}
+                        
+//                         {/* Cart: Produce Section (Moving) */}
+//                         <div className="absolute top-16 left-20 w-4 h-4 flex items-center justify-center group cursor-pointer">
+//                              <div className="absolute w-full h-full bg-lime-500 rounded-full animate-ping opacity-75"></div>
+//                              <div className="relative w-3 h-3 bg-lime-600 rounded-full border-2 border-white shadow-md"></div>
+//                              {/* Tooltip */}
+//                              <div className="absolute -top-8 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">Cart-02</div>
+//                         </div>
+
+//                         {/* Cart: Aisle 2 (Static) */}
+//                         <div className="absolute top-64 left-[48%] w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-md group cursor-pointer">
+//                             <div className="absolute -top-8 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">Cart-22</div>
+//                         </div>
+
+//                         {/* Cart: Checkout (Pulsing Red - Alert?) */}
+//                         <div className="absolute bottom-10 left-[45%] w-4 h-4 flex items-center justify-center group cursor-pointer">
+//                              <div className="absolute w-full h-full bg-red-500 rounded-full animate-pulse opacity-75"></div>
+//                              <div className="relative w-3 h-3 bg-red-600 rounded-full border-2 border-white shadow-md"></div>
+//                              <div className="absolute -top-8 bg-red-600 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">Cart-12 (Payment)</div>
+//                         </div>
+
+//                         {/* Cart: Bakery */}
+//                         <div className="absolute top-24 right-24 w-3 h-3 bg-yellow-500 rounded-full border-2 border-white shadow-md"></div>
+                        
+//                     </div>
+//                 </div>
+
+//                 {/* Right: Feed & Battery */}
+//                 <div className="space-y-8">
+                    
+//                     {/* Live Feed - Timeline Style */}
+//                     <div className="bg-white rounded-3xl border border-slate-100 shadow-lg flex flex-col h-[450px] overflow-hidden">
+//                          <div className="p-6 border-b border-slate-100 bg-white z-10">
+//                             <div className="flex justify-between items-center">
+//                                 <h3 className="font-extrabold text-slate-800 text-lg">Activity Log</h3>
+//                                 <span className="flex items-center text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-full border border-red-100">
+//                                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
+//                                     LIVE
+//                                 </span>
+//                             </div>
+//                         </div>
+                        
+//                         <div className="flex-1 overflow-y-auto p-6 relative">
+//                             {/* Vertical Timeline Line */}
+//                             <div className="absolute left-[29px] top-0 bottom-0 w-0.5 bg-slate-100"></div>
+
+//                             <div className="space-y-6 relative z-10">
+//                                 {activities.map((act, i) => (
+//                                     <div key={i} className="flex group">
+//                                         {/* Timeline Dot */}
+//                                         <div className="mr-4 flex-shrink-0">
+//                                             <div className={`w-3 h-3 mt-1.5 rounded-full border-2 border-white shadow-sm ${
+//                                                 act.type === 'alert' ? 'bg-red-500' : 
+//                                                 act.type === 'success' ? 'bg-green-500' : 
+//                                                 act.type === 'add' ? 'bg-lime-500' : 'bg-blue-400'
+//                                             } ring-4 ring-slate-50 group-hover:ring-slate-100 transition-all`}></div>
+//                                         </div>
+                                        
+//                                         {/* Content */}
+//                                         <div className="flex-1 pb-1">
+//                                             <div className="flex justify-between items-center mb-1">
+//                                                 <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+//                                                      act.type === 'alert' ? 'bg-red-50 text-red-600' : 
+//                                                      act.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-500'
+//                                                 }`}>{act.type}</span>
+//                                                 <span className="text-[10px] font-mono text-slate-400">{act.time}</span>
+//                                             </div>
+//                                             <p className="text-sm text-slate-700 font-medium leading-relaxed group-hover:text-slate-900 transition-colors">{act.text}</p>
+//                                         </div>
+//                                     </div>
+//                                 ))}
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     {/* Battery Widget - Dark Mode Aesthetics */}
+//                     <div className="bg-slate-900 rounded-3xl shadow-2xl p-6 relative overflow-hidden text-white">
+//                         {/* Glow Effect */}
+//                         <div className="absolute top-0 right-0 w-40 h-40 bg-lime-500 blur-[60px] opacity-20 rounded-full -mr-10 -mt-10 pointer-events-none"></div>
+                        
+//                         <div className="relative z-10">
+//                             <div className="flex justify-between items-center mb-6">
+//                                 <div>
+//                                     <h3 className="font-bold text-lg">Fleet Power</h3>
+//                                     <p className="text-xs text-slate-400">Battery health overview</p>
+//                                 </div>
+//                                 <div className="p-2 bg-slate-800 rounded-lg">
+//                                     <svg className="w-5 h-5 text-lime-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+//                                 </div>
+//                             </div>
+                            
+//                             <div className="space-y-5">
+//                                 <div>
+//                                     <div className="flex justify-between text-xs font-bold mb-2 text-slate-300"><span>Optimal (&gt;70%)</span><span className="text-lime-400">25 Carts</span></div>
+//                                     <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-lime-500 w-[65%] shadow-[0_0_8px_rgba(132,204,22,0.6)]"></div></div>
+//                                 </div>
+//                                 <div>
+//                                     <div className="flex justify-between text-xs font-bold mb-2 text-slate-300"><span>Moderate</span><span className="text-yellow-400">15 Carts</span></div>
+//                                     <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-yellow-400 w-[30%]"></div></div>
+//                                 </div>
+//                                 <div>
+//                                     <div className="flex justify-between text-xs font-bold mb-2 text-slate-300"><span>Critical</span><span className="text-red-400">10 Carts</span></div>
+//                                     <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-red-500 w-[15%] animate-pulse"></div></div>
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default DashboardPage;
+
+
+import React, { useState } from 'react';
+
+// @ts-ignore
+import LiveCartMonitor from '../components/LiveCartMonitor';
+
+
+// --- Interfaces ---
+interface KpiData {
+  liveShoppers: number;
+  cartsInUse: number;
+  totalCarts: number;
+  avgBasketSize: number;
+  todaysRevenue: number;
+  totalProductsSold: number;
+  productsInCarts: number;
+  productsInStore: number;
 }
 
-interface Alert {
-  id: number;
-  type: 'Assistance' | 'Offline';
-  title: string;
-  subtitle: string;
+interface Activity {
+  time: string;
+  text: string;
+  type: 'add' | 'success' | 'remove' | 'alert' | 'info';
 }
 
+// --- KPI Card Component ---
 interface KpiCardProps {
+    id: string;
     title: string;
     value: string | number;
+    subtext: string;
     icon: React.ReactNode;
-    iconBgColor: string;
-    iconTextColor: string;
+    trend?: number;
+    color: 'blue' | 'green' | 'purple' | 'orange' | 'lime' | 'indigo' | 'rose' | 'cyan';
+    chartData: number[];
+    onClick: (id: string) => void;
 }
 
-interface KpiData {
-    liveShoppers: number;
-    cartsInUse: number;
-    totalCarts: number;
-    avgBasketSize: number;
-    todaysRevenue: number;
-    totalProductsSold: number;
-    productsInCarts: number;
-    productsInStore: number;
-}
+const KpiCard: React.FC<KpiCardProps> = ({ id, title, value, subtext, icon, trend, color, chartData, onClick }) => {
+    
+    const styleMap = {
+        lime:   { iconBg: "bg-lime-100", iconText: "text-lime-700", bar: "bg-lime-500", badge: "bg-lime-100 text-lime-700" },
+        blue:   { iconBg: "bg-blue-100", iconText: "text-blue-700", bar: "bg-blue-500", badge: "bg-blue-100 text-blue-700" },
+        orange: { iconBg: "bg-orange-100", iconText: "text-orange-700", bar: "bg-orange-500", badge: "bg-orange-100 text-orange-700" },
+        purple: { iconBg: "bg-purple-100", iconText: "text-purple-700", bar: "bg-purple-500", badge: "bg-purple-100 text-purple-700" },
+        green:  { iconBg: "bg-emerald-100", iconText: "text-emerald-700", bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700" },
+        indigo: { iconBg: "bg-indigo-100", iconText: "text-indigo-700", bar: "bg-indigo-500", badge: "bg-indigo-100 text-indigo-700" },
+        cyan:   { iconBg: "bg-cyan-100", iconText: "text-cyan-700", bar: "bg-cyan-500", badge: "bg-cyan-100 text-cyan-700" },
+        rose:   { iconBg: "bg-rose-100", iconText: "text-rose-700", bar: "bg-rose-500", badge: "bg-rose-100 text-rose-700" },
+    };
 
-// --- Icon Components ---
-const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
-const CartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
-const RupeeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 8h6m-5 4h5m2 5H7.5a4.5 4.5 0 110-9H12" /></svg>;
-const ChartIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
-const AlertTriangleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M8.257 3.099c.636-1.21 2.273-1.21 2.91 0l5.25 10.001c.636 1.21-.242 2.65-1.455 2.65H4.462c-1.213 0-2.091-1.44-1.455-2.65l5.25-10.001zM10 14a1 1 0 110-2 1 1 0 010 2zm0-7a1 1 0 00-1 1v2a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>;
-const OfflineIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0L6.18 9.42a1.5 1.5 0 001.34 2.08h4.96a1.5 1.5 0 001.34-2.08l-2.33-6.25zM10 15a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>;
-const InUseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
-const AvailableIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-const ChargingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
-const LowBatteryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
-const AssistanceIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>;
-const TagIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 8V5a2 2 0 012-2z" /></svg>;
-const CubeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>;
-const CollectionIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>;
-const ViewBoardsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" /></svg>;
-const ChevronDownIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>;
-
-// --- Helper to get status styles ---
-const getStatusStyles = (status: Cart['status']) => {
-    switch (status) {
-        case 'In Use': return { bg: 'bg-blue-100', text: 'text-blue-800', icon: <InUseIcon /> };
-        case 'Available': return { bg: 'bg-gray-100', text: 'text-gray-800', icon: <AvailableIcon /> };
-        case 'Charging': return { bg: 'bg-green-100', text: 'text-green-800', icon: <ChargingIcon /> };
-        case 'Low Battery': return { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <LowBatteryIcon /> };
-        case 'Assistance': return { bg: 'bg-red-100', text: 'text-red-800', icon: <AssistanceIcon /> };
-        default: return { bg: 'bg-gray-100', text: 'text-gray-800', icon: <AvailableIcon /> };
-    }
-};
-
-// --- Cart Details Modal Component ---
-const CartDetailsModal = ({ cart, onClose }: { cart: Cart; onClose: () => void; }) => {
-    if (!cart) return null;
-    const statusStyles = getStatusStyles(cart.status);
+    const theme = styleMap[color];
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg m-4">
-                <div className="p-6 border-b flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-gray-800">Cart-{cart.id} Details</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-3xl">&times;</button>
+        <div 
+            onClick={() => onClick(id)}
+            className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group cursor-pointer"
+        >
+            <div className="flex justify-between items-start mb-4">
+                <div className={`p-3 rounded-xl ${theme.iconBg} ${theme.iconText}`}>
+                    {icon}
                 </div>
-                <div className="p-6 space-y-4">
-                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${statusStyles.bg} ${statusStyles.text}`}>
-                        {statusStyles.icon} {cart.status}
-                    </div>
-                    {cart.shopperName && <p><strong>Shopper:</strong> {cart.shopperName}</p>}
-                    {cart.since && <p><strong>Since:</strong> {cart.since}</p>}
-                    <p><strong>Battery:</strong> {cart.battery}%</p>
-                    <p><strong>Items in Cart:</strong> {cart.items}</p>
-                    
-                    {cart.itemsList && cart.itemsList.length > 0 && (
-                        <div>
-                            <h4 className="font-semibold mt-4 mb-2">Items List:</h4>
-                            <ul className="list-disc list-inside bg-gray-50 p-3 rounded-md max-h-40 overflow-y-auto">
-                                {cart.itemsList.map((item, index) => (
-                                    <li key={index} className="flex justify-between">
-                                        <span>{item.name}</span>
-                                        <span>₹{item.price.toFixed(2)}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-                <div className="p-4 bg-gray-50 text-right rounded-b-lg">
-                    <button onClick={onClose} className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700">Close</button>
-                </div>
+                {trend !== undefined && (
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full flex items-center ${trend > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
+                    </span>
+                )}
+            </div>
+            
+            <div className="relative z-10">
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{title}</p>
+                <h3 className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">{value}</h3>
+                <p className="text-slate-400 text-xs mt-1 font-medium">{subtext}</p>
+            </div>
+
+            <div className="flex items-end space-x-1 h-10 mt-4">
+                {chartData.map((h, i) => (
+                    <div 
+                        key={i} 
+                        style={{ height: `${h}%` }} 
+                        className={`flex-1 rounded-t-sm ${theme.bar} opacity-60 group-hover:opacity-100 transition-all duration-300`}
+                    ></div>
+                ))}
             </div>
         </div>
     );
 };
 
+// --- Main Dashboard Page ---
+interface DashboardPageProps {
+    onNavigate: (page: string, metricId?: string) => void;
+}
 
-const DashboardPage = () => {
-    const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
-    const [kpiData, setKpiData] = useState<KpiData | null>(null);
-    const [alerts, setAlerts] = useState<Alert[]>([]);
-    const [fleet, setFleet] = useState<Cart[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
+    
+    const [kpi] = useState<KpiData>({
+        liveShoppers: 84, cartsInUse: 35, totalCarts: 50, avgBasketSize: 851,
+        todaysRevenue: 45230, totalProductsSold: 1240, productsInCarts: 312, productsInStore: 15400
+    });
 
+    const [activities] = useState<Activity[]>([
+        { time: '10:42 AM', text: 'Cart-04: Added "Organic Milk" (₹78)', type: 'add' },
+        { time: '10:41 AM', text: 'Cart-12: Checkout Initiated', type: 'success' },
+        { time: '10:38 AM', text: 'Cart-08: Removed "Bread"', type: 'remove' },
+        { time: '10:35 AM', text: 'Cart-01: Low Battery Warning (14%)', type: 'alert' },
+        { time: '10:30 AM', text: 'System: New price sync completed', type: 'info' },
+    ]);
 
-    const kpiUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/dashboard-kpis?';
-    const alertsUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/alerts?';
-    const fleetUrl = 'https://smart-cart-management-erddb6awbrbtfgdh.centralindia-01.azurewebsites.net/api/carts?';
-
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const [kpiResponse, alertsResponse, fleetResponse] = await Promise.all([
-                    fetch(kpiUrl),
-                    fetch(alertsUrl),
-                    fetch(fleetUrl)
-                ]);
-
-                if (!kpiResponse.ok || !alertsResponse.ok || !fleetResponse.ok) {
-                    throw new Error('Failed to fetch dashboard data');
-                }
-
-                const kpiJson = await kpiResponse.json();
-                const alertsJson = await alertsResponse.json();
-                const fleetJson = await fleetResponse.json();
-
-                setKpiData(kpiJson);
-                setAlerts(alertsJson);
-                setFleet(fleetJson);
-
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchDashboardData();
-    }, []);
-
-    const dismissAlert = (alertId: number) => {
-        setAlerts(currentAlerts => currentAlerts.filter(alert => alert.id !== alertId));
+    const Icons = {
+        Revenue: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 12v-2mc-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z" /></svg>,
+        Carts: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+        Basket: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+        Shoppers: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
+        Products: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
+        Inventory: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>,
+        InCart: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>,
+        Alert: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
     };
 
-    if (isLoading) {
-        return <div className="p-8 text-center text-gray-500">Loading Dashboard...</div>;
-    }
-
-    if (error) {
-        return <div className="p-8 text-center text-red-500">Error: {error}</div>;
-    }
+    const handleCardClick = (id: string) => {
+        onNavigate('MetricDetail', id);
+    };
 
     return (
-        <div className="py-8">
-            {selectedCart && <CartDetailsModal cart={selectedCart} onClose={() => setSelectedCart(null)} />}
+        <div className="space-y-8 animate-fade-in pb-12">
             
+            {/* 1. 8-Grid Widgets */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                 <KpiCard title="Live Shoppers" value={kpiData?.liveShoppers ?? 0} icon={<UserIcon />} iconBgColor="bg-blue-100" iconTextColor="text-blue-600" />
-                 <KpiCard title="Carts in Use" value={`${kpiData?.cartsInUse ?? 0} / ${kpiData?.totalCarts ?? 0}`} icon={<CartIcon />} iconBgColor="bg-green-100" iconTextColor="text-green-600" />
-                 <KpiCard title="Avg. Basket Size" value={`₹${kpiData?.avgBasketSize.toFixed(2) ?? 0}`} icon={<RupeeIcon />} iconBgColor="bg-yellow-100" iconTextColor="text-yellow-600" />
-                 <KpiCard title="Today's Revenue" value={`₹${kpiData?.todaysRevenue.toLocaleString('en-IN') ?? 0}`} icon={<ChartIcon />} iconBgColor="bg-purple-100" iconTextColor="text-purple-600" />
-                 <KpiCard title="Total Products Sold" value={kpiData?.totalProductsSold.toLocaleString('en-IN') ?? 0} icon={<TagIcon />} iconBgColor="bg-pink-100" iconTextColor="text-pink-600" />
-                 <KpiCard title="Products in Carts" value={kpiData?.productsInCarts.toLocaleString('en-IN') ?? 0} icon={<CubeIcon />} iconBgColor="bg-indigo-100" iconTextColor="text-indigo-600" />
-                 <KpiCard title="Products in Store" value={kpiData?.productsInStore.toLocaleString('en-IN') ?? 0} icon={<CollectionIcon />} iconBgColor="bg-teal-100" iconTextColor="text-teal-600" />
-                 <AisleProductCard />
+                <KpiCard id="revenue" onClick={handleCardClick} title="Live Revenue" value={`₹${kpi.todaysRevenue.toLocaleString()}`} subtext="Net sales today" icon={Icons.Revenue} trend={12.5} color="lime" chartData={[40, 60, 55, 80, 65, 90, 75, 95, 100]} />
+                <KpiCard id="carts" onClick={handleCardClick} title="Active Carts" value={`${kpi.cartsInUse} / ${kpi.totalCarts}`} subtext="70% Utilization" icon={Icons.Carts} trend={5.2} color="blue" chartData={[20, 30, 45, 50, 60, 70, 65, 70, 72]} />
+                <KpiCard id="basket" onClick={handleCardClick} title="Avg. Basket" value={`₹${kpi.avgBasketSize}`} subtext="Per active session" icon={Icons.Basket} trend={-2.4} color="orange" chartData={[80, 75, 70, 72, 68, 65, 70, 72, 68]} />
+                <KpiCard id="products" onClick={handleCardClick} title="Live Products" value={kpi.productsInCarts} subtext="Items currently in carts" icon={Icons.InCart} trend={8.1} color="purple" chartData={[10, 20, 30, 50, 70, 80, 85, 90, 95]} />
+                
+                <KpiCard id="sales" onClick={handleCardClick} title="Total Sales" value={kpi.totalProductsSold} subtext="Units sold today" icon={Icons.Products} trend={15.4} color="green" chartData={[30, 45, 60, 75, 80, 85, 90, 95, 100]} />
+                <KpiCard id="footfall" onClick={handleCardClick} title="Footfall" value={kpi.liveShoppers} subtext="Shoppers in-store" icon={Icons.Shoppers} trend={3.2} color="indigo" chartData={[20, 40, 50, 55, 60, 58, 62, 65, 60]} />
+                <KpiCard id="inventory" onClick={handleCardClick} title="Inventory" value={(kpi.productsInStore/1000).toFixed(1) + 'k'} subtext="SKUs on floor" icon={Icons.Inventory} trend={0} color="cyan" chartData={[100, 98, 96, 94, 92, 90, 88, 86, 84]} />
+                <KpiCard id="health" onClick={handleCardClick} title="Cart Health" value="98%" subtext="Fleet operational" icon={Icons.Alert} trend={-1.0} color="rose" chartData={[100, 100, 98, 98, 96, 98, 98, 97, 98]} />
             </div>
 
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Store Map</h3>
-                    <div className="h-96 bg-gray-50 rounded-md relative flex items-center justify-center border">
-                        <p className="text-gray-400">Map Placeholder</p>
-                    </div>
-                </div>
+            {/* --- NEW SECTION: LIVE CART MONITOR --- */}
+            {/* This injects your real-time tracking component into the dashboard flow */}
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden">
+                <LiveCartMonitor />
+            </div>
+            {/* -------------------------------------- */}
 
-                <div className="space-y-8">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Critical Alerts</h3>
-                        <div className="space-y-4">
-                            {alerts.map(alert => (
-                                <div key={alert.id} className={`p-4 rounded-lg flex items-start justify-between ${alert.type === 'Assistance' ? 'bg-red-50' : 'bg-yellow-50'}`}>
-                                    <div className="flex items-start space-x-3">
-                                        {alert.type === 'Assistance' ? <AlertTriangleIcon /> : <OfflineIcon />}
-                                        <div>
-                                            <p className={`text-sm font-semibold ${alert.type === 'Assistance' ? 'text-red-800' : 'text-yellow-800'}`}>{alert.title}</p>
-                                            <p className={`text-xs ${alert.type === 'Assistance' ? 'text-red-600' : 'text-yellow-600'}`}>{alert.subtitle}</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => dismissAlert(alert.id)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            {/* 2. Heatmap & Feed Split */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                
+                {/* Left: Store Heatmap - REDESIGNED */}
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-lg p-8 flex flex-col overflow-hidden">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 className="font-extrabold text-slate-800 text-2xl tracking-tight">Live Store Map</h3>
+                            <p className="text-sm text-slate-500 font-medium mt-1">Real-time cart positioning & zones</p>
+                        </div>
+                        <div className="flex space-x-2">
+                            {['High', 'Med', 'Low'].map((level, i) => (
+                                <div key={i} className="flex items-center px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100">
+                                    <div className={`w-2.5 h-2.5 rounded-full mr-2 ${level === 'High' ? 'bg-red-500' : level === 'Med' ? 'bg-yellow-400' : 'bg-green-500'}`}></div>
+                                    <span className="text-xs font-bold text-slate-600">{level}</span>
                                 </div>
                             ))}
-                            {alerts.length === 0 && <p className="text-sm text-gray-500 text-center">No active alerts.</p>}
                         </div>
                     </div>
+                    
+                    {/* Map Visualization Container */}
+                    <div className="flex-1 bg-slate-50/50 rounded-2xl relative overflow-hidden border border-slate-200 min-h-[450px] shadow-inner">
+                        {/* Floor Grid Pattern */}
+                        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'linear-gradient(#94a3b8 1px, transparent 1px), linear-gradient(90deg, #94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
 
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cart Fleet Status</h3>
-                        <ul className="space-y-2">
-                            {fleet.length > 0 ? (
-                                fleet.map(cart => (
-                                    <CartStatusItem key={cart.id} cart={cart} onDetailsClick={() => setSelectedCart(cart)} />
-                                ))
-                            ) : (
-                                <p className="text-sm text-gray-500 text-center py-4">No cart data available.</p>
-                            )}
-                        </ul>
+                        {/* --- ZONE: PRODUCE (Top Left) --- */}
+                        <div className="absolute top-6 left-6 w-[25%] h-40 bg-green-50/50 border-2 border-green-100 rounded-xl flex items-center justify-center">
+                             <span className="text-green-300 font-black tracking-widest text-xs uppercase rotate-0">Fresh Produce</span>
+                        </div>
+
+                        {/* --- ZONE: BAKERY/DAIRY (Top Right) --- */}
+                        <div className="absolute top-6 right-6 w-[25%] h-40 bg-orange-50/50 border-2 border-orange-100 rounded-xl flex items-center justify-center">
+                             <span className="text-orange-300 font-black tracking-widest text-xs uppercase rotate-0">Bakery & Dairy</span>
+                        </div>
+
+                        {/* --- ZONE: CENTER AISLES (Middle) --- */}
+                        {/* Aisle 1 */}
+                        <div className="absolute top-52 left-[15%] w-[18%] h-40 bg-white border-2 border-slate-200 rounded-lg shadow-sm flex items-center justify-center">
+                            <span className="text-slate-300 font-black tracking-widest text-xs rotate-90">AISLE 1</span>
+                        </div>
+                        {/* Aisle 2 */}
+                        <div className="absolute top-52 left-[41%] w-[18%] h-40 bg-white border-2 border-slate-200 rounded-lg shadow-sm flex items-center justify-center">
+                            <span className="text-slate-300 font-black tracking-widest text-xs rotate-90">AISLE 2</span>
+                        </div>
+                        {/* Aisle 3 */}
+                        <div className="absolute top-52 right-[15%] w-[18%] h-40 bg-white border-2 border-slate-200 rounded-lg shadow-sm flex items-center justify-center">
+                            <span className="text-slate-300 font-black tracking-widest text-xs rotate-90">AISLE 3</span>
+                        </div>
+
+                        {/* --- ZONE: CHECKOUT (Bottom) --- */}
+                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-white border-t-2 border-dashed border-slate-300 flex justify-center items-center">
+                             <div className="flex space-x-12">
+                                <div className="w-16 h-10 bg-slate-100 border border-slate-300 rounded-md flex items-center justify-center text-[10px] text-slate-400 font-bold">REG 1</div>
+                                <div className="w-16 h-10 bg-slate-100 border border-slate-300 rounded-md flex items-center justify-center text-[10px] text-slate-400 font-bold">REG 2</div>
+                                <div className="w-16 h-10 bg-slate-100 border border-slate-300 rounded-md flex items-center justify-center text-[10px] text-slate-400 font-bold">REG 3</div>
+                             </div>
+                             <span className="absolute bottom-2 right-4 text-[10px] text-slate-400 font-black uppercase tracking-widest">Exit</span>
+                        </div>
+
+                        {/* --- ACTIVE CARTS (Animated Dots) --- */}
+                        
+                        {/* Cart: Produce Section (Moving) */}
+                        <div className="absolute top-16 left-20 w-4 h-4 flex items-center justify-center group cursor-pointer">
+                             <div className="absolute w-full h-full bg-lime-500 rounded-full animate-ping opacity-75"></div>
+                             <div className="relative w-3 h-3 bg-lime-600 rounded-full border-2 border-white shadow-md"></div>
+                             {/* Tooltip */}
+                             <div className="absolute -top-8 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">Cart-02</div>
+                        </div>
+
+                        {/* Cart: Aisle 2 (Static) */}
+                        <div className="absolute top-64 left-[48%] w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-md group cursor-pointer">
+                            <div className="absolute -top-8 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">Cart-22</div>
+                        </div>
+
+                        {/* Cart: Checkout (Pulsing Red - Alert?) */}
+                        <div className="absolute bottom-10 left-[45%] w-4 h-4 flex items-center justify-center group cursor-pointer">
+                             <div className="absolute w-full h-full bg-red-500 rounded-full animate-pulse opacity-75"></div>
+                             <div className="relative w-3 h-3 bg-red-600 rounded-full border-2 border-white shadow-md"></div>
+                             <div className="absolute -top-8 bg-red-600 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">Cart-12 (Payment)</div>
+                        </div>
+
+                        {/* Cart: Bakery */}
+                        <div className="absolute top-24 right-24 w-3 h-3 bg-yellow-500 rounded-full border-2 border-white shadow-md"></div>
+                        
                     </div>
                 </div>
-            </div>
-        </div>
-    );
-};
 
-// --- Reusable Components with TypeScript props ---
-const KpiCard: React.FC<KpiCardProps> = ({ title, value, icon, iconBgColor, iconTextColor }) => (
-    <div className="bg-white rounded-lg shadow p-5 flex items-center space-x-4">
-        <div className={`p-3 rounded-full ${iconBgColor} ${iconTextColor}`}>{icon}</div>
-        <div>
-            <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-    </div>
-);
-
-// --- New Interactive Aisle Product Card ---
-const AisleProductCard = () => {
-    const aisleData: { [key: string]: number } = {
-        'Aisle 1': 150, 'Aisle 2': 210, 'Aisle 3': 180,
-        'Aisle 4': 95, 'Aisle 5': 250, 'Aisle 6': 130, 'Aisle 7': 125,
-    };
-    const totalProducts = Object.values(aisleData).reduce((sum, count) => sum + count, 0);
-    const [selectedAisle, setSelectedAisle] = useState('All Aisles');
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    const handleAisleSelect = (aisle: string) => {
-        setSelectedAisle(aisle);
-        setIsDropdownOpen(false);
-        setSearchTerm('');
-    };
-
-    const filteredAisles = Object.keys(aisleData).filter(aisle => 
-        aisle.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [dropdownRef]);
-
-
-    return (
-        <div className="bg-white rounded-lg shadow p-5 flex items-center space-x-4">
-            <div className="p-3 rounded-full bg-orange-100 text-orange-600">
-                <ViewBoardsIcon />
-            </div>
-            <div className="flex-1">
-                <div className="relative" ref={dropdownRef}>
-                    <button 
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
-                        className="flex items-center justify-between w-full text-sm text-gray-500 font-medium hover:text-gray-800 p-1 rounded-md"
-                    >
-                        <span>{selectedAisle === 'All Aisles' ? 'Total Aisle Products' : `Products in ${selectedAisle}`}</span>
-                        <ChevronDownIcon />
-                    </button>
-                    {isDropdownOpen && (
-                        <div className="absolute top-full mt-2 w-56 bg-white border rounded-lg shadow-xl z-10">
-                            <div className="p-2">
-                                <input 
-                                    type="text"
-                                    placeholder="Search aisle..."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
+                {/* Right: Feed & Battery */}
+                <div className="space-y-8">
+                    
+                    {/* Live Feed - Timeline Style */}
+                    <div className="bg-white rounded-3xl border border-slate-100 shadow-lg flex flex-col h-[450px] overflow-hidden">
+                         <div className="p-6 border-b border-slate-100 bg-white z-10">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-extrabold text-slate-800 text-lg">Activity Log</h3>
+                                <span className="flex items-center text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-full border border-red-100">
+                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
+                                    LIVE
+                                </span>
                             </div>
-                            <div className="max-h-48 overflow-y-auto">
-                                <a href="#" onClick={() => handleAisleSelect('All Aisles')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold">All Aisles</a>
-                                {filteredAisles.map(aisle => (
-                                    <a href="#" key={aisle} onClick={() => handleAisleSelect(aisle)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        {aisle}
-                                    </a>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-6 relative">
+                            {/* Vertical Timeline Line */}
+                            <div className="absolute left-[29px] top-0 bottom-0 w-0.5 bg-slate-100"></div>
+
+                            <div className="space-y-6 relative z-10">
+                                {activities.map((act, i) => (
+                                    <div key={i} className="flex group">
+                                        {/* Timeline Dot */}
+                                        <div className="mr-4 flex-shrink-0">
+                                            <div className={`w-3 h-3 mt-1.5 rounded-full border-2 border-white shadow-sm ${
+                                                act.type === 'alert' ? 'bg-red-500' : 
+                                                act.type === 'success' ? 'bg-green-500' : 
+                                                act.type === 'add' ? 'bg-lime-500' : 'bg-blue-400'
+                                            } ring-4 ring-slate-50 group-hover:ring-slate-100 transition-all`}></div>
+                                        </div>
+                                        
+                                        {/* Content */}
+                                        <div className="flex-1 pb-1">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                                                     act.type === 'alert' ? 'bg-red-50 text-red-600' : 
+                                                     act.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-500'
+                                                }`}>{act.type}</span>
+                                                <span className="text-[10px] font-mono text-slate-400">{act.time}</span>
+                                            </div>
+                                            <p className="text-sm text-slate-700 font-medium leading-relaxed group-hover:text-slate-900 transition-colors">{act.text}</p>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
-                    )}
+                    </div>
+
+                    {/* Battery Widget - Dark Mode Aesthetics */}
+                    <div className="bg-slate-900 rounded-3xl shadow-2xl p-6 relative overflow-hidden text-white">
+                        {/* Glow Effect */}
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-lime-500 blur-[60px] opacity-20 rounded-full -mr-10 -mt-10 pointer-events-none"></div>
+                        
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 className="font-bold text-lg">Fleet Power</h3>
+                                    <p className="text-xs text-slate-400">Battery health overview</p>
+                                </div>
+                                <div className="p-2 bg-slate-800 rounded-lg">
+                                    <svg className="w-5 h-5 text-lime-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-5">
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold mb-2 text-slate-300"><span>Optimal (&gt;70%)</span><span className="text-lime-400">25 Carts</span></div>
+                                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-lime-500 w-[65%] shadow-[0_0_8px_rgba(132,204,22,0.6)]"></div></div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold mb-2 text-slate-300"><span>Moderate</span><span className="text-yellow-400">15 Carts</span></div>
+                                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-yellow-400 w-[30%]"></div></div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold mb-2 text-slate-300"><span>Critical</span><span className="text-red-400">10 Carts</span></div>
+                                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-red-500 w-[15%] animate-pulse"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-                <p className="text-2xl font-bold text-gray-900">
-                    {selectedAisle === 'All Aisles' ? totalProducts : aisleData[selectedAisle]}
-                </p>
             </div>
         </div>
-    );
-};
-
-
-const CartStatusItem = ({ cart, onDetailsClick }: { cart: Cart, onDetailsClick: () => void }) => {
-    const batteryColor = cart.battery > 50 ? 'bg-green-500' : cart.battery > 20 ? 'bg-yellow-500' : 'bg-red-500';
-    const statusStyles = getStatusStyles(cart.status);
-    return (
-        <li className="flex items-center space-x-4 py-4 border-b last:border-b-0">
-            <div className={`p-3 rounded-full ${statusStyles.bg} ${statusStyles.text}`}>
-                {statusStyles.icon}
-            </div>
-            <div className="flex-1">
-                <div className="flex justify-between items-center">
-                    <p className="text-sm font-bold text-gray-900">Cart-{cart.id}</p>
-                    <p className="text-sm font-medium text-gray-600">{cart.items} Items</p>
-                </div>
-                <div className="flex items-center space-x-2 mt-1">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className={`${batteryColor} h-2 rounded-full`} style={{ width: `${cart.battery}%` }}></div>
-                    </div>
-                    <span className="text-xs font-semibold text-gray-500 w-10 text-right">{cart.battery}%</span>
-                </div>
-            </div>
-            <div>
-                <button onClick={onDetailsClick} className="text-sm font-semibold text-blue-600 hover:text-blue-800 underline">Details</button>
-            </div>
-        </li>
     );
 };
 
